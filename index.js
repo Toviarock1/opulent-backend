@@ -5,7 +5,7 @@ const knex = require("knex");
 const knexConfig = require("./knexfile");
 
 const app = express();
-const port = 5001;
+const port = process.env.PORT || 5001;
 
 // Set up Knex for migrations
 const migrationConfig = knexConfig.development;
