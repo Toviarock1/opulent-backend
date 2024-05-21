@@ -10,13 +10,23 @@ const port = 5001;
 // Set up Knex for migrations
 const migrationConfig = knexConfig.development;
 const knexInstance = knex(migrationConfig);
-
+// development
+// const db = new pg.Client({
+//   user: "postgres",
+//   host: "localhost",
+//   database: "opulent",
+//   password: "Bighead123.",
+//   port: 5432,
+// });
+// live
 const db = new pg.Client({
-  user: "postgres",
-  host: "localhost",
-  database: "opulent",
-  password: "Bighead123.",
-  port: 5432,
+  connectionString:
+    "postgres://opulent_user:i5R6Rf2wf9cdD6jcNv9OcObY2neVbb8R@dpg-cp5t7pacn0vc73bl1l90-a.oregon-postgres.render.com/opulent",
+  ssl: {
+    // SSL options
+    rejectUnauthorized: false, // Ignore self-signed certificates (not recommended for production)
+    // Other SSL options like ca, cert, key can also be provided if necessary
+  },
 });
 db.connect();
 
