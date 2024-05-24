@@ -159,10 +159,10 @@ app.get("/investment/:userid", async (req, res) => {
   const userid = req.params.userid;
   try {
     const result = await db.query(
-      "SELECT * FROM investments WHERE user_id = $1",
+      "SELECT * FROM investments WHERE userid = $1",
       [userid]
     );
-    if (result.rows > 0) {
+    if (result.rows.length > 0) {
       res.status(200).json({ status: "success", ...result });
     } else {
       res
