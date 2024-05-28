@@ -195,6 +195,27 @@ app.post("/update-userinfo", async (req, res) => {
   }
 });
 
+// get user copytrading feature
+app.get("/copytrading/:userid", async (req, res) => {
+  const userid = req.params.userid;
+  console.log(userid);
+  try {
+    const result = await db.query(
+      "SELECT * FROM copytrading WHERE userid = $1",
+      [userid]
+    );
+    console.log(result);
+    if (result.rows.length > 0) {
+      res.status(200).json({ status: "success", ...result });
+    } else {
+      res.status(200).json({ status: "success", message: "No details found" });
+    }
+  } catch (error) {
+    res.status(400).json({ status: "failed", ...error });
+    console.log(error);
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
