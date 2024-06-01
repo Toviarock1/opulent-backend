@@ -44,14 +44,31 @@ app.get("/", async (req, res) => {
 });
 
 app.post("/signup", async (req, res) => {
-  const { firstname, lastname, email, password, phonenumber, country, role } =
-    req.body;
+  const {
+    firstname,
+    lastname,
+    email,
+    password,
+    phonenumber,
+    country,
+    role,
+    level,
+  } = req.body;
   // const initialBalance = 0000;
   if (firstname && lastname && email && password && phonenumber && country) {
     try {
       const createAccount = await db.query(
         "INSERT INTO users (firstname, lastname, email, password, level, phonenumber, country, role) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
-        [firstname, lastname, email, password, 1, phonenumber, country, role]
+        [
+          firstname,
+          lastname,
+          email,
+          password,
+          level,
+          phonenumber,
+          country,
+          role,
+        ]
       );
 
       const createAccountAmounts = await db.query(
