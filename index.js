@@ -68,12 +68,12 @@ app.post("/signup", async (req, res) => {
           phonenumber,
           country,
           role,
-        ]
+        ],
       );
 
       const createAccountAmounts = await db.query(
         "INSERT INTO amounts VALUES ($1,$2,$3,$4,$5,$6,$7)",
-        [0o000, 0o000, 0o000, 0o000, 0o000, 80, createAccount.rows[0].id]
+        [0o000, 0o000, 0o000, 0o000, 0o000, 80, createAccount.rows[0].id],
       );
 
       res.json({
@@ -152,7 +152,7 @@ app.post("/gettransactions", async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM transactions WHERE userid = $1",
-      [user_id]
+      [user_id],
     );
 
     if (result.rows.length > 0) {
@@ -177,7 +177,7 @@ app.get("/investment/:userid", async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM investments WHERE userid = $1",
-      [userid]
+      [userid],
     );
     if (result.rows.length > 0) {
       res.status(200).json({ status: "success", ...result });
@@ -198,7 +198,7 @@ app.post("/update-userinfo", async (req, res) => {
     if (firstname && lastname && phonenumber && id) {
       const update = await db.query(
         "UPDATE users SET firstname = $1, lastname = $2, phonenumber = $3 WHERE id = $4",
-        [firstname, lastname, phonenumber, id]
+        [firstname, lastname, phonenumber, id],
       );
       res
         .status(200)
@@ -219,7 +219,7 @@ app.get("/copytrading/:userid", async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM copytrading WHERE userid = $1",
-      [userid]
+      [userid],
     );
     console.log(result);
     if (result.rows.length > 0) {
@@ -227,6 +227,39 @@ app.get("/copytrading/:userid", async (req, res) => {
     } else {
       res.status(200).json({ status: "success", message: "No details found" });
     }
+  } catch (error) {
+    res.status(400).json({ status: "failed", ...error });
+    console.log(error);
+  }
+});
+
+// move funds to invested
+app.post("/movefunds", async (req, res) => {
+  const { userid, invested } = req.body;
+  try {
+    let updateAmounts;
+    const userInfo = await db.query(
+      "SELECT * FROM amounts WHERE user_id = $1",
+      [userid],
+    );
+    if (userInfo.rows.length > 0) {
+      const newBalance = userInfo.rows[0].balance - invested;
+      const newInvested = +userInfo.rows[0].invested + +invested;
+      if (userInfo.rows[0].bonus > 0) {
+        updateAmounts = await db.query(
+          "UPDATE amounts SET balance=$1,bonus=0,invested=$2+80 WHERE user_id=$3",
+          [newBalance, newInvested, userid],
+        );
+      } else {
+        updateAmounts = await db.query(
+          "UPDATE amounts SET balance=$1,invested=$2 WHERE user_id=$3",
+          [newBalance, newInvested, userid],
+        );
+      }
+    }
+
+    console.log(updateAmounts);
+    res.status(200).json({ status: "success", ...updateAmounts });
   } catch (error) {
     res.status(400).json({ status: "failed", ...error });
     console.log(error);
