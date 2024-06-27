@@ -103,7 +103,7 @@ app.post("/login", async (req, res) => {
     const result = await db.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
-    // console.log(result.rows[0]);
+    // console.log(result.rows[0]); //test
     if (result.rows.length > 0) {
       if (result.rows[0].password === password) {
         res.status(200).json({ status: "success", ...result.rows[0] });
