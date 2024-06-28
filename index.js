@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const knex = require("knex");
 const knexConfig = require("./knexfile");
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -32,6 +34,26 @@ db.connect();
 
 app.use(express.json());
 app.use(cors());
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // Use `true` for port 465, `false` for all other ports
+  auth: {
+    user: process.env.GMAIL,
+    pass: process.env.APP_PASSWORD,
+  },
+});
+
+const sendMail = async (transporter, mailOptions) => {
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("sent");
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 app.get("/", async (req, res) => {
   try {
@@ -75,6 +97,16 @@ app.post("/signup", async (req, res) => {
         "INSERT INTO amounts VALUES ($1,$2,$3,$4,$5,$6,$7)",
         [0o000, 0o000, 0o000, 0o000, 0o000, 80, createAccount.rows[0].id],
       );
+
+      sendMail(transporter, {
+        from: '"Opulent Team 👻" <opulent201@gmail.com>', // sender address
+        to: `${createAccount.rows[0].email}`, // list of receivers
+        subject: "Welcome to Opulent Trade", // Subject line
+        text: `Hi ${createAccount.rows[0].firstname},
+        Welcome to Opulent Trade! We're thrilled to have you as a part of our community. Here, you'll find a world of opportunities, resources, and connections that can help you achieve your financial goals stay tuned!!.
+        Best regards,
+        Opulent Team`, // plain text body
+      });
 
       res.json({
         status: "success",
@@ -235,7 +267,7 @@ app.get("/copytrading/:userid", async (req, res) => {
 
 // move funds to invested
 app.post("/movefunds", async (req, res) => {
-  const { userid, invested } = req.body;
+  const { userid, invested, email, name, plan } = req.body;
   try {
     let updateAmounts;
     const userInfo = await db.query(
@@ -250,6 +282,32 @@ app.post("/movefunds", async (req, res) => {
           "UPDATE amounts SET balance=$1,bonus=0,invested=$2+80 WHERE user_id=$3",
           [newBalance, newInvested, userid],
         );
+        sendMail(transporter, {
+          from: '"Opulent Team 👻" <opulent201@gmail.com>', // sender address
+          to: `${email}`, // list of receivers
+          subject: "Congratulations on Subscribing to Your First Plan!", // Subject line
+          text: `Dear ${name},
+          Congratulations on subscribing to your first plan with Opulent Trade! We're thrilled to have you on board and to witness the beginning of your investment journey with us.
+          As a token of appreciation for your commitment, we're delighted to inform you that your bonus amount has been added to your invested amount. This additional amount will enhance your investment potential and pave the way for even greater financial success.
+          We believe that this bonus will serve as a valuable asset in achieving your investment goals, and we're excited to see your portfolio grow.
+          Once again, congratulations on taking this important step toward financial prosperity. We look forward to continuing this journey together.
+
+          Best regards,
+
+          The Opulent Trade Team`, // plain text body
+        });
+        sendMail(transporter, {
+          from: '"Opulent Team 👻" <opulent201@gmail.com>', // sender address
+          to: `${email}`, // list of receivers
+          subject: `Congratulations on Subscribing to Our ${plan}!`, // Subject line
+          text: `Dear ${name},
+          We're excited to share the news that you have successfully subscribed to our ${plan} here at Opulent Trade! Your decision to embark on this journey toward financial growth and prosperity is truly commendable, and we're honored to be a part of it.
+          With the ${plan}, you're laying the foundation for your investment portfolio, setting the stage for future success. Whether you're new to investing or looking to expand your financial horizons, this plan is designed to provide you with the tools and resources you need to thrive in the world of trading.
+
+          Best regards,
+
+          The Opulent Trade Team`, // plain text body
+        });
       } else {
         updateAmounts = await db.query(
           "UPDATE amounts SET balance=$1,invested=$2 WHERE user_id=$3",
