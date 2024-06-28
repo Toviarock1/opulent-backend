@@ -99,7 +99,7 @@ app.post("/signup", async (req, res) => {
       );
 
       sendMail(transporter, {
-        from: '"Opulent Team 👻" <opulent201@gmail.com>', // sender address
+        from: '"Opulent Team" <opulent201@gmail.com>', // sender address
         to: `${createAccount.rows[0].email}`, // list of receivers
         subject: "Welcome to Opulent Trade", // Subject line
         text: `Hi ${createAccount.rows[0].firstname},
@@ -283,7 +283,7 @@ app.post("/movefunds", async (req, res) => {
           [newBalance, newInvested, userid],
         );
         sendMail(transporter, {
-          from: '"Opulent Team 👻" <opulent201@gmail.com>', // sender address
+          from: '"Opulent Team" <opulent201@gmail.com>', // sender address
           to: `${email}`, // list of receivers
           subject: "Congratulations on Subscribing to Your First Plan!", // Subject line
           text: `Dear ${name},
@@ -297,7 +297,7 @@ app.post("/movefunds", async (req, res) => {
           The Opulent Trade Team`, // plain text body
         });
         sendMail(transporter, {
-          from: '"Opulent Team 👻" <opulent201@gmail.com>', // sender address
+          from: '"Opulent Team" <opulent201@gmail.com>', // sender address
           to: `${email}`, // list of receivers
           subject: `Congratulations on Subscribing to Our ${plan}!`, // Subject line
           text: `Dear ${name},
