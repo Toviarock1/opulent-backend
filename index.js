@@ -313,6 +313,33 @@ app.post("/movefunds", async (req, res) => {
           "UPDATE amounts SET balance=$1,invested=$2 WHERE user_id=$3",
           [newBalance, newInvested, userid],
         );
+        const copyTradingFeature = await db.query(
+          "SELECT * FROM copytrading WHERE userid = $1",
+          [userid],
+        );
+
+        if (copyTradingFeature.rows.length <= 0) {
+          const enableCopyTrading = await db.query(
+            "INSERT INTO copytrading VALUES ($1,$2,$3)",
+            [true, 0, userid],
+          );
+          // console.log(enableCopyTrading);
+          sendMail(transporter, {
+            from: '"Opulent Team" <opulent201@gmail.com>', // sender address
+            to: `${email}`, // list of receivers
+            subject: `Copy Trade Feature Enabled: Payment Received and Amount Transferred to Invested Balance`, // Subject line
+            text: `Dear ${name},
+            We're delighted to inform you that the copy trade feature has been successfully enabled for your account at Opulent Trade! Your payment has been received, and we've promptly processed it, transferring the amount to your invested balance.
+            With the copy trade feature now activated, you gain access to a powerful tool that allows you to replicate the trading strategies of seasoned investors in our community. This feature opens up new opportunities for you to diversify your portfolio and potentially enhance your investment returns.
+            Your payment has been seamlessly integrated into your invested balance, ensuring that you can immediately begin exploring the benefits of copy trading without delay. We believe this feature will further empower you on your journey toward financial success.
+            Thank you for choosing Opulent Trade as your trusted investment platform. We're committed to providing you with the tools and support you need to thrive in the markets.
+            Happy trading!
+
+            Best regards,
+
+            The Opulent Trade Team`, // plain text body
+          });
+        }
       }
     }
 
